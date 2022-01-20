@@ -1,17 +1,65 @@
+"""
+Project: Disaster Response Pipeline (Udacity - Data Science NanoDegree)
+
+Preprocessing of data steps
+
+Sample Script Syntax
+> run process_data.py <messages csv path> <categories csv path> <SQLite database path>
+
+for example:
+> run process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db
+
+"""
+
+
+#import relevant libraries
 import sys
 import pandas as pd
 from sqlalchemy import create_engine
 
+
 def load_data(messages_filepath, categories_filepath):
-    #load messages
+    """
+    Load Data Function
+
+    Parameters
+    ----------
+    messages_filepath : string -> Path to csv file for messages.
+    categories_filepath : string -> Path to csv file for categories.
+
+    Returns
+    -------
+    df : dataframe -> merged dataframe of messages and categories.
+
+    """
+    
+    #load messages and categories
     messages = pd.read_csv(messages_filepath)
-    #load categories
     categories = pd.read_csv(categories_filepath)
     # merge into one dataframe
     df = messages.merge(categories, how='outer', on=['id'])
     return df
+
     
 def clean_data(df):
+    """
+    Clean Data Function
+    
+    Parameters
+    ----------
+    df : dataframe -> uncleaned dataframe containing merged messages and categories.
+
+    Returns
+    -------
+    df : dataframe -> cleaned dataframe
+    
+    Cleaning steps:
+        - columns split into separate categories and original aggregated column removed
+        - column headings set to meaningful names
+        - values set to one or zero for each category
+        - duplicate rows removed
+
+    """
     # create separate columns of data
     categories = df['categories'].str.split(';', expand = True)
     
@@ -26,7 +74,6 @@ def clean_data(df):
         # convert column from string to numeric
         categories[column] = categories[column].astype(int)
         
-    
     # drop the original categories column
     df.drop(['categories'], axis=1, inplace=True)
     
@@ -38,15 +85,39 @@ def clean_data(df):
     
     return df
     
-    
-
 
 def save_data(df, database_filename):
-    engine = create_engine('sqlite:///' + database_filename')
-    df.to_sql('labelled_messages', engine, index=False)  
+    """
+    Save Data Function
+
+    Parameters
+    ----------
+    df : dataframe -> cleaned message and category dataframe
+    database_filename : string -> name of SQLite database target
+
+    Returns
+    -------
+    None.
+    
+    """
+    #set engine and save dataframe to table
+    engine = create_engine('sqlite:///' + database_filename)
+    df.to_sql('labelled_messages', engine, index=False, if_exists='replace')  
 
 
 def main():
+    """
+    Main Function to orchestrate the ETL process
+        1 - load message and category data from csv files 
+        2 - clean data
+        3 - save data to SQLite database
+
+    Returns
+    -------
+    None.
+
+    """
+    # check for correct sys arguments and then execute pipeline
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
