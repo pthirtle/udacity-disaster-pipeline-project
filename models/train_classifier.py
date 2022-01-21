@@ -132,21 +132,29 @@ def build_model():
     ])
     
     # set the parameters for grid search
-    parameters = [{ 'clf__estimator__n_estimators': [5, 10],
-                   'clf__estimator__max_depth': [5, 10, None],
-                   'clf__estimator__max_leaf_nodes': [5, 10, None]}]
-    cv_model =  GridSearchCV(pipeline, param_grid=parameters, scoring = 'f1', verbose = 1)
+    parameters = [{ 'clf__estimator__n_estimators': [5, 10, 20]
+#                   ,'clf__estimator__max_depth': [5, 10, None],
+#                   ,'clf__estimator__max_leaf_nodes': [5, 10, None]
+                   }]
+    cv_model =  GridSearchCV(pipeline, param_grid=parameters, verbose = 1)
     
     return cv_model
     
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
-
+    
+    # get classification report
+    y_pred = model.predict(X_test)
+    for category in category_names:
+        print('Model Performance with Category: {}'.format(category))
+        print(classification_report(Y_test[category],y_pred[category]))
+        print("\nBest Parameters:", model.best_params_)
 
 def save_model(model, model_filepath):
-    pass
+    
+    # save model
+    pickle.dump(model, open(model_filepath,'wb'))
 
 
 def main():
