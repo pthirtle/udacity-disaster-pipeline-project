@@ -73,6 +73,8 @@ def clean_data(df):
         categories[column] = categories[column].map(lambda x: x[-1])
         # convert column from string to numeric
         categories[column] = categories[column].astype(int)
+        # in some rows the value is 2 not 1, set to 1
+        categories[column] = categories[column].map(lambda x: 1 if x > 1 else x)
         
     # drop the original categories column
     df.drop(['categories'], axis=1, inplace=True)
