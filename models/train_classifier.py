@@ -1,9 +1,48 @@
 import sys
+from sqlalchemy import create_engine
+import pandas as pd
+import re
+
+import nltk
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import classification_report
+
 
 
 def load_data(database_filepath):
-    pass
+    """
+    Load Data Function
 
+    Parameters
+    ----------
+    database_filepath : string -> location of database
+
+    Returns
+    -------
+    X -> text from messages
+    y -> multiple labels  for each message (1 or 0)
+    column_names -> column headings for y
+
+    """  
+    # load data from database
+    engine = create_engine('sqlite:///' + database_filepath)
+    df = pd.read_sql_table('labelled_messages', engine)
+    # text is stored in the message column
+    X = df.message.values
+    # categories are in columns 4 onwards
+    y = df.iloc[:,4:]
+    # get category names
+    category_names = y.columns
+
+    return X, y, category_names
 
 def tokenize(text):
     pass
