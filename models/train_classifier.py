@@ -144,7 +144,21 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    
+    """
+    Evaluate Model Function    
+
+    Parameters
+    ----------
+    model : model -> the model to evaluate
+    X_test : -> test X values
+    Y_test : -> test Y values
+    category_names : list -> categories for the labels
+
+    Returns
+    -------
+    None.
+
+    """
     # get classification report
     y_pred = model.predict(X_test)
     y_pred = pd.DataFrame(y_pred, columns = Y_test.columns)
@@ -155,7 +169,19 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    
+    """
+    Save Model Function
+
+    Parameters
+    ----------
+    model : model -> model to save
+    model_filepath : string -> save filepath
+
+    Returns
+    -------
+    None.
+
+    """
     # save model
     pickle.dump(model, open(model_filepath,'wb'))
 
