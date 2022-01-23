@@ -11,11 +11,12 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.base import BaseEstimator, TransformerMixin
 
+import pickle
 
 def load_data(database_filepath):
     """
@@ -132,9 +133,9 @@ def build_model():
     ])
     
     # set the parameters for grid search
-    parameters = [{ 'clf__estimator__n_estimators': [5, 10, 20]
-#                   ,'clf__estimator__max_depth': [5, 10, None],
-#                   ,'clf__estimator__max_leaf_nodes': [5, 10, None]
+    parameters = [{ 'clf__estimator__n_estimators': [5, 10]
+                   ,'clf__estimator__max_depth': [5, 10, None]
+                   ,'clf__estimator__max_leaf_nodes': [5, 10, None]
                    }]
     cv_model =  GridSearchCV(pipeline, param_grid=parameters, verbose = 1)
     
@@ -146,10 +147,12 @@ def evaluate_model(model, X_test, Y_test, category_names):
     
     # get classification report
     y_pred = model.predict(X_test)
-    for category in category_names:
-        print('Model Performance with Category: {}'.format(category))
-        print(classification_report(Y_test[category],y_pred[category]))
+    y_pred = pd.DataFrame(y_pred, columns = Y_test.columns)
+    for column in Y_test.columns:
+        print('Model Performance with Category: {}'.format(column))
+        print(classification_report(Y_test[column],y_pred[column]))
         print("\nBest Parameters:", model.best_params_)
+
 
 def save_model(model, model_filepath):
     
