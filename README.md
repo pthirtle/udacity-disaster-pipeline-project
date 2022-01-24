@@ -25,6 +25,12 @@ The project is divided into the following components
 3. Go to http://0.0.0.0:3001/
 
 ### Screenshots:
-![Model data stats](screenshots/2_model_data.png)
-![Enter details](screenshots/1_enter_message.png)
-![Results](screenshots/3_model_output.png)
+
+#### Example of model data statistics:
+![Model data stats](screenshots/2_model_data.PNG)
+
+#### Example of web entry:
+![Enter details](screenshots/1_enter_message.PNG)
+
+#### Example of output:
+![Results](screenshots/3_model_output.PNG)
