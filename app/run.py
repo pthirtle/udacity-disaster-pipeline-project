@@ -8,7 +8,9 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Pie
+#import plotly.graph_objs as gro
+
 import joblib
 from sqlalchemy import create_engine
 
@@ -74,30 +76,96 @@ def index():
     
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
+    # genre counts
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    
+    # category counts
+    label_name = list(df.columns)[4:]
+    label_count = df[label_name].sum()
+    label_blank = df.shape[0] - label_count
+    label_direct_count = df[df['genre']=='direct'][label_name].sum()
+    label_news_count = df[df['genre']=='news'][label_name].sum()
+    label_social_count = df[df['genre']=='social'][label_name].sum()
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
+        # Pie Chart - overview of what genre the messages have
         {
-            'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
+            'data': [{
+                'values': genre_counts,
+                'labels': genre_names,
+                'type': 'pie',
+                'hole': 0.5,
+                }
             ],
 
             'layout': {
-                'title': 'Distribution of Message Genres',
-                'yaxis': {
-                    'title': "Count"
-                },
-                'xaxis': {
-                    'title': "Genre"
-                }
+                'title': 'What type of messages are in the model training data?'
             }
-        }
+        },
+        
+        # Bar Chart - distribution of labels in the training data
+        {
+            'data': [{
+                'x': label_name,
+                'y': label_count,
+                'name': 'count of labels',
+                'type': 'bar',
+                'marker': {'line': {'color': 'black', 'width': 1}},
+                'offsetgroup': 0,
+                },
+                {
+                'name': 'blank',
+                'x': label_name,
+                'y': label_blank,
+                'type': 'bar',
+                'marker': {'color': 'white', 'line': {'color': 'black', 'width': 1}},
+                'offsetgroup': 0,
+                'base': label_count,
+                }
+            ],
+
+            'layout': {
+                'title': 'How are the labels distributed in the model training data?',
+            }
+        },
+        
+        # Stacked bar with  genre
+        {
+            'data': [{
+                'x': label_name,
+                'y': label_direct_count,
+                'name': 'Direct',
+                'type': 'bar',
+                'marker': {'color': 'blue', 'line': {'color': 'black', 'width': 1}},
+                'offsetgroup': 0,
+                },
+                {
+                'name': 'News',
+                'x': label_name,
+                'y': label_news_count,
+                'type': 'bar',
+                'marker': {'color': 'green', 'line': {'color': 'black', 'width': 1}},
+                'offsetgroup': 0,
+                'base': label_direct_count,
+                },
+                {
+                'name': 'Social',
+                'x': label_name,
+                'y': label_social_count,
+                'type': 'bar',
+                'marker': {'color': 'red', 'line': {'color': 'black', 'width': 1}},
+                'offsetgroup': 0,
+                'base': label_direct_count + label_news_count,
+                }
+            ],
+
+            'layout': {
+                'title': 'How are the labels distributed by Genre in the model training data?',
+            }
+        },       
     ]
     
     # encode plotly graphs in JSON
