@@ -25,4 +25,4 @@ The project is divided into the following components
 3. Go to http://0.0.0.0:3001/
 
 ### Screenshots:
-
+![Web entry](screenshots/1_enter_message.png)
