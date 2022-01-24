@@ -11,10 +11,11 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.base import BaseEstimator, TransformerMixin
+
 
 import pickle
 
@@ -109,11 +110,13 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
 
 
-def build_model():
+def build_model_first_attempt():
     """
     Build Model Function
     
-    Builds a model pipeline including GridSearch
+    Builds a Random Forest model pipeline including GridSearch
+    
+    ** Retired this model and went with adaboost instead **
 
     Returns
     -------
@@ -140,7 +143,37 @@ def build_model():
     cv_model =  GridSearchCV(pipeline, param_grid=parameters, verbose = 1)
     
     return cv_model
+
+def build_model():
+    """
+    Build Model Function
     
+    Builds a model pipeline including GridSearch
+
+    Returns
+    -------
+    cv_model : model -> the model 
+
+    """
+    # create the pipeline
+    pipeline = Pipeline([
+        ('features', FeatureUnion([
+            ('text_pipeline', Pipeline([
+                ('count_vectorizer', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf_transformer', TfidfTransformer())
+            ])),
+            ('starting_verb_transformer', StartingVerbExtractor())
+        ])),
+        ('clf', MultiOutputClassifier(AdaBoostClassifier()))    
+    ])
+    
+    # set the parameters for grid search
+    parameters = [{ 'clf__estimator__learning_rate': [0.8, 1.0, 1.2, 1.4]
+                   ,'clf__estimator__n_estimators': [10, 20, 30]
+                   }]
+    cv_model =  GridSearchCV(pipeline, param_grid=parameters, cv = 3, verbose = 2)
+    
+    return cv_model
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -191,7 +224,7 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
         
         print('Building model...')
         model = build_model()
